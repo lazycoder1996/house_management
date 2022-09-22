@@ -1,4 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:house_management/backend/exeat.dart';
+import 'package:house_management/backend/logistic.dart';
+import 'package:house_management/backend/punishment.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/constants/prefs.dart';
 import 'package:house_management/pages/auth/login_page.dart';
 import 'package:postgres/postgres.dart';
@@ -19,8 +23,13 @@ void main() {
 // LOAD DATA FROM SHARED PREFERENCES
 Future init() async {
   prefs = await SharedPreferences.getInstance();
-  connection = PostgreSQLConnection("localhost", 5432, "2021/22",
-      username: "postgres", password: "q1w2e3r4t5y6");
+  connection = PostgreSQLConnection(
+    "localhost",
+    5432,
+    "2021/22",
+    username: "postgres",
+    password: "q1w2e3r4t5y6",
+  );
   await connection.open().then((value) async {
     print('connection opened');
     await connection.transaction((ctx) async {
@@ -52,6 +61,10 @@ class _MyAppState extends State<MyApp> {
       providers: [
         ChangeNotifierProvider(create: (context) => Prefs()),
         ChangeNotifierProvider(create: (context) => Backend()),
+        ChangeNotifierProvider(create: (context) => StudentProvider()),
+        ChangeNotifierProvider(create: (context) => ExeatProvider()),
+        ChangeNotifierProvider(create: (context) => LogisticsProvider()),
+        ChangeNotifierProvider(create: (context) => PunishmentProvider()),
       ],
       child: const HomePage(),
     );
@@ -66,6 +79,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  init() async {
+    await Provider.of<Backend>(context, listen: false).fetchItems();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<Prefs>(builder: (context, prefs, child) {

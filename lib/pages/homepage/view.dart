@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:house_management/pages/logistics/view.dart';
 import 'package:house_management/pages/registration/view.dart';
 
 class Home extends StatefulWidget {
@@ -13,7 +14,7 @@ class _HomeState extends State<Home> {
   List<Widget> pages = const [
     SizedBox(),
     RegistrationPage(),
-    SizedBox(),
+    LogisticsPage(),
     SizedBox(),
     SizedBox(),
     SizedBox(),

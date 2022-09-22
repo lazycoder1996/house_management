@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/model/exeat.dart';
+import 'package:house_management/model/item.dart';
 import 'package:house_management/model/logistics.dart';
 import 'package:house_management/model/programme.dart';
 import 'package:house_management/model/status.dart';
@@ -9,10 +10,6 @@ import '../model/house.dart';
 import '../model/student.dart';
 
 class Backend extends ChangeNotifier {
-  final List<StudentModel> _students = [];
-
-  List<StudentModel> get students => _students;
-
   final List<ProgrammeModel> _programmes = [];
 
   List<ProgrammeModel> get programmes => _programmes;
@@ -23,13 +20,6 @@ class Backend extends ChangeNotifier {
   final List<StatusModel> _status = [];
 
   List<StatusModel> get status => _status;
-
-  bool _isStudentSelected = false;
-
-  bool get isStudentSelected => _isStudentSelected;
-  late StudentModel _selectedStudent;
-
-  StudentModel get selectedStudent => _selectedStudent;
 
   late final List<LogisticsModel> _studentLogistics = [];
 
@@ -50,74 +40,7 @@ class Backend extends ChangeNotifier {
     notifyListeners();
   }
 
-  fetchStudentLogistics({StudentModel? student}) async {
-    _studentLogistics.clear();
-    String query = "select * from logistics where std_id=${student!.id}";
-    var res = await connection.mappedResultsQuery(query);
-    for (final row in res) {
-      Map<String, dynamic> logistic = row["logistics"];
-      _studentLogistics.add(LogisticsModel.fromMap(logistic));
-    }
-    notifyListeners();
-  }
-
   fetchStudentPunishment({int? id}) async {}
-
-  setStudent(StudentModel student) {
-    _selectedStudent = student;
-    _isStudentSelected = true;
-    notifyListeners();
-  }
-
-  clearStudent() {
-    _isStudentSelected = false;
-    notifyListeners();
-  }
-
-  Future updateStudent({required String query}) async {
-    await connection.transaction((ctx) async {
-      await ctx.query(query);
-    });
-    fetchStudents();
-  }
-
-  Future addStudent({
-    required name,
-    required programme,
-    required house,
-    required parentName,
-    required residence,
-    required contact,
-    required dob,
-    required status,
-  }) async {
-    await connection.transaction((ctx) async {
-      await ctx.query("insert into registration"
-          "(name, programme, house, parent_name, residence, contact, \"DOB\", status) "
-          "values ('$name', '$programme', "
-          "'$house', '$parentName', '$residence', '$contact', "
-          "'$dob', '$status')");
-    }).then((val) {
-      fetchStudents();
-    });
-  }
-
-  Future fetchStudents({
-    int? id,
-    String? query,
-  }) async {
-    _students.clear();
-    var res = await connection.mappedResultsQuery(
-      query ??
-          "select * from registration r join house h on lower(r.house)=lower(h.name) ${id != null ? "where std_id = $id" : ""}",
-    );
-    for (final row in res) {
-      Map<String, dynamic> student = row["registration"];
-      student['house'] = row['house'];
-      _students.add(StudentModel.fromMap(student));
-    }
-    notifyListeners();
-  }
 
   Future fetchProgrammes() async {
     _programmes.clear();
@@ -149,6 +72,20 @@ class Backend extends ChangeNotifier {
       _status.add(
         StatusModel(status: status['status'], id: status["id"]),
       );
+    }
+    notifyListeners();
+  }
+
+  final List<ItemModel> _items = [];
+
+  List<ItemModel> get items => _items;
+
+  Future fetchItems() async {
+    _items.clear();
+    var res = await connection.mappedResultsQuery("select * from items");
+    for (final row in res) {
+      var item = row["items"];
+      _items.add(ItemModel.fromMap(item));
     }
     notifyListeners();
   }

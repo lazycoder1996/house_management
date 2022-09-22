@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:house_management/backend/fetch.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/pages/registration/student_card.dart';
 import 'package:provider/provider.dart';
 
@@ -20,16 +20,16 @@ class _DisplayStudentsState extends State<DisplayStudents> {
   }
 
   fetchStudents() async {
-    await Provider.of<Backend>(context, listen: false).fetchStudents();
+    await Provider.of<StudentProvider>(context, listen: false).fetchStudents();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Backend>(
-      builder: (context, studentProvider, child) {
+    return Consumer<StudentProvider>(
+      builder: (context, sp, child) {
         return GridView.builder(
           controller: ScrollController(),
-          itemCount: studentProvider.students.length,
+          itemCount: sp.students.length,
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 400,
             mainAxisExtent: 130,
@@ -37,7 +37,7 @@ class _DisplayStudentsState extends State<DisplayStudents> {
             crossAxisSpacing: 10,
           ),
           itemBuilder: (context, index) {
-            StudentModel student = studentProvider.students[index];
+            StudentModel student = sp.students[index];
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: StudentCard(student: student),

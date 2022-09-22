@@ -1,25 +1,31 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:house_management/model/student.dart';
 
 class LogisticsModel {
   final DateTime date;
+  final String name;
+  final String house;
   final List<String>? items;
 
   LogisticsModel({
     required this.date,
     required this.items,
+    required this.name,
+    required this.house,
   });
 
   LogisticsModel copyWith({
     required DateTime date,
     required List<String> items,
-    required StudentModel student,
+    required String name,
+    required String house,
   }) {
     return LogisticsModel(
       date: date,
       items: items,
+      name: name,
+      house: house,
     );
   }
 
@@ -27,13 +33,17 @@ class LogisticsModel {
     return LogisticsModel(
       date: model.date,
       items: model.items,
+      name: model.name,
+      house: model.house,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'date': date.millisecondsSinceEpoch,
+      'date': date,
       'items': items,
+      'house': house,
+      'name': house,
     };
   }
 
@@ -41,6 +51,8 @@ class LogisticsModel {
     return LogisticsModel(
       date: map['date'],
       items: List<String>.from(map['items'] ?? []),
+      name: map['name'],
+      house: map['house'],
     );
   }
 

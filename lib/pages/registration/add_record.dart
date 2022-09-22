@@ -1,7 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/backend/fetch.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/house.dart';
 import 'package:house_management/model/programme.dart';
+import 'package:house_management/utils/to_title_case.dart';
+import 'package:house_management/widgets/discard_changes.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/format_name.dart';
@@ -66,30 +69,7 @@ class _AddStudentRecordState extends State<AddStudentRecord> {
               showDialog(
                   context: context,
                   builder: (context) {
-                    return ContentDialog(
-                      actions: [
-                        Button(
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Yes'),
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                            }),
-                        Button(
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('No'),
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            }),
-                      ],
-                      title: const Text('Discard Changes?'),
-                      content: const Text(
-                          'Are you sure you want to discard changes?'),
-                    );
+                    return const DiscardContentDialog();
                   });
             }
           },
@@ -101,13 +81,13 @@ class _AddStudentRecordState extends State<AddStudentRecord> {
         Button(
           onPressed: () {
             if (verifyRecords()) {
-              Provider.of<Backend>(context, listen: false)
+              Provider.of<StudentProvider>(context, listen: false)
                   .addStudent(
-                      name: formatName(_studentName.text.trim()),
+                      name: formatName(toTitle(_studentName.text.trim())),
                       programme: _programme,
                       house: _house,
-                      parentName: _parentName.text.trim(),
-                      residence: _residence.text.trim(),
+                      parentName: formatName(toTitle(_parentName.text.trim())),
+                      residence: formatName(toTitle(_residence.text.trim())),
                       contact: _parentContact.text.trim(),
                       dob: dob,
                       status: 'in school')

@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/backend/fetch.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/parse_color.dart';
@@ -94,7 +95,7 @@ class _FilterWidgetState extends State<FilterWidget> {
     } else {
       v['query'].add("'$e'");
     }
-    Provider.of<Backend>(context, listen: false)
+    Provider.of<StudentProvider>(context, listen: false)
         .fetchStudents(query: formQuery());
   }
 

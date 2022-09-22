@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/utils/parse_color.dart';
 import 'package:provider/provider.dart';
 
-import '../../backend/fetch.dart';
+import '../../backend/student.dart';
 import '../../model/student.dart';
 import '../../widgets/profile_picture.dart';
 
@@ -21,7 +21,8 @@ class StudentCard extends StatelessWidget {
       width: 200,
       child: GestureDetector(
         onTap: () {
-          Provider.of<Backend>(context, listen: false).setStudent(student);
+          Provider.of<StudentProvider>(context, listen: false)
+              .setStudent(student);
         },
         child: Card(
           child: Column(

@@ -1,8 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as m;
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/status.dart';
 import 'package:house_management/model/student.dart';
 import 'package:house_management/utils/format_name.dart';
+import 'package:house_management/utils/to_title_case.dart';
 import 'package:house_management/widgets/profile_picture.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +48,7 @@ class _ProfileRecordState extends State<ProfileRecord> {
   @override
   void initState() {
     super.initState();
+    dob = DateTime(dob.year, dob.month, dob.day);
     init();
   }
 
@@ -59,12 +62,13 @@ class _ProfileRecordState extends State<ProfileRecord> {
     _programme = widget.student.programme;
     _house = widget.student.house.name;
     dob = widget.student.dob;
+    dob = DateTime(dob.year, dob.month, dob.day);
     _status = widget.student.status;
     statuses = Provider.of<Backend>(context, listen: false).status;
   }
 
   String queryString = "";
-
+  String newName = "";
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -88,18 +92,18 @@ class _ProfileRecordState extends State<ProfileRecord> {
                 onPressed: () {
                   toggleEditMode();
                   if (!editMode) {
-                    queryString = "update registration set "
-                        "name=coalesce('${formatName(_studentName.text.trim())}', name),"
-                        "house=coalesce('$_house', house),"
-                        "programme=coalesce('$_programme',programme),"
-                        "parent_name=coalesce('${_parentName.text.trim()}',parent_name),"
-                        "residence=coalesce('${_residence.text.trim()}',residence),"
-                        "contact=coalesce('${_parentContact.text.trim()}',contact),"
-                        "\"DOB\"=coalesce('$dob',\"DOB\"),"
-                        "status=coalesce('$_status',status)"
-                        "where std_id=${widget.student.id}";
-                    Provider.of<Backend>(context, listen: false)
-                        .updateStudent(query: queryString);
+                    Provider.of<StudentProvider>(context, listen: false)
+                        .updateStudent(
+                      name: formatName(toTitle(_studentName.text.trim())),
+                      house: _house,
+                      programme: _programme,
+                      parentName: formatName(toTitle(_parentName.text.trim())),
+                      residence: formatName(toTitle(_residence.text.trim())),
+                      contact: _parentContact.text.trim(),
+                      dob: dob,
+                      status: _status,
+                      id: widget.student.id,
+                    );
                   }
                 },
               )
@@ -112,13 +116,14 @@ class _ProfileRecordState extends State<ProfileRecord> {
             student: widget.student,
             height: 150,
             width: 150,
+            names: _studentName.text.trim(),
           ),
         ),
         // DETAILS
         SizedBox(
           height: 450,
           child: Padding(
-            padding: const EdgeInsets.only(left: 80, right: 80),
+            padding: const EdgeInsets.only(left: 80, right: 80, top: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

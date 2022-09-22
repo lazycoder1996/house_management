@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:house_management/backend/fetch.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/student.dart';
 import 'package:house_management/pages/registration/details/exeat/exeat.dart';
 import 'package:house_management/pages/registration/details/logistics/logistics.dart';
@@ -32,7 +32,7 @@ class _StudentProfileState extends State<StudentProfile> {
             size: 30,
           ),
           onPressed: () {
-            Provider.of<Backend>(context, listen: false).clearStudent();
+            Provider.of<StudentProvider>(context, listen: false).clearStudent();
           },
         ),
       ),
