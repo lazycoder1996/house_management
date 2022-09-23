@@ -95,7 +95,7 @@ class StudentModel {
       'residence': residence,
       'contact': contact,
       'picture': picture,
-      'DOB': dob.millisecondsSinceEpoch,
+      'DOB': dob,
       'status': status,
       'year': year,
     };

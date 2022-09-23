@@ -7,7 +7,6 @@ import 'package:house_management/model/status.dart';
 
 import '../main.dart';
 import '../model/house.dart';
-import '../model/student.dart';
 
 class Backend extends ChangeNotifier {
   final List<ProgrammeModel> _programmes = [];
@@ -29,16 +28,18 @@ class Backend extends ChangeNotifier {
 
   List<ExeatModel> get studentExeat => _studentExeat;
 
-  fetchStudentExeat({StudentModel? student}) async {
-    _studentExeat.clear();
-    String query = "select * from exeat where std_id=${student!.id}";
-    var res = await connection.mappedResultsQuery(query);
-    for (final row in res) {
-      Map<String, dynamic> exeat = row["exeat"];
-      _studentExeat.add(ExeatModel.fromMap(exeat));
-    }
-    notifyListeners();
-  }
+  // fetchStudentExeat({StudentModel? student}) async {
+  //   _studentExeat.clear();
+  //   String query = "select * from exeat e join registration r "
+  //       "on e.std_id=r.std_id where e.std_id=${student!.id}";
+  //   var res = await connection.mappedResultsQuery(query);
+  //   for (final row in res) {
+  //     Map<String, dynamic> exeat = row["exeat"];
+  //     exeat["name"] = row["registration"]["name"];
+  //     _studentExeat.add(ExeatModel.fromMap(exeat));
+  //   }
+  //   notifyListeners();
+  // }
 
   fetchStudentPunishment({int? id}) async {}
 

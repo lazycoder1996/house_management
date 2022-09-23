@@ -1,11 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:house_management/backend/exeat.dart';
 import 'package:house_management/backend/logistic.dart';
+import 'package:house_management/model/exeat.dart';
 import 'package:house_management/model/student.dart';
 import 'package:house_management/utils/to_title_case.dart';
 import 'package:provider/provider.dart';
 
 import '../main.dart';
 import '../model/logistics.dart';
+import '../model/punishment.dart';
 
 class StudentProvider extends ChangeNotifier {
   final List<StudentModel> _students = [];
@@ -50,7 +53,7 @@ class StudentProvider extends ChangeNotifier {
     fetchLogistics(student: student, context: context);
   }
 
-  fetchLogistics(
+  Future fetchLogistics(
       {required StudentModel student, required BuildContext context}) async {
     _studentLogistics.clear();
     var logistics = await Provider.of<LogisticsProvider>(context, listen: false)
@@ -61,7 +64,7 @@ class StudentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  updateLogistics(
+  Future updateLogistics(
       {required StudentModel student,
       required items,
       required BuildContext context}) async {
@@ -73,9 +76,85 @@ class StudentProvider extends ChangeNotifier {
     fetchLogistics(student: student, context: context);
   }
 
-  fetchPunishment({required StudentModel student}) async {}
+  final List<PunishmentModel> _studentPunishments = [];
 
-  fetchExeats({required StudentModel student}) async {}
+  List<PunishmentModel> get studentPunishments => _studentPunishments;
+
+  fetchPunishment({required StudentModel student}) async {
+    String query = "select * from punishment where std_id = ${student.id}";
+    var res = await connection.mappedResultsQuery(query);
+    for (final row in res) {
+      Map<String, dynamic> punishment = row["punishment"];
+      _studentPunishments.add(PunishmentModel.fromMap(punishment));
+    }
+    notifyListeners();
+  }
+
+  final List<ExeatModel> _studentExeats = [];
+
+  List<ExeatModel> get exeats => _studentExeats;
+
+  Future addExeat({
+    required StudentModel student,
+    required Map<String, dynamic> values,
+    required BuildContext context,
+  }) async {
+    String query =
+        "insert into exeat (std_id, date_issued, reason, destination, expected_return) "
+        "values (${student.id} ,now(), '${values['reason']}', '${values['destination']}', "
+        "'${values['expected_return']}')";
+    await connection.transaction((ctx) async {
+      await ctx.query(query);
+    }).then((v) async {
+      query =
+          "update registration set status = 'absent with exeat' where std_id=${student.id}";
+      await connection.transaction((ctx) async {
+        await ctx.query(query);
+      });
+    });
+    Map<String, dynamic> s = _selectedStudent.toMap();
+    s['status'] = 'absent with exeat';
+    _selectedStudent = StudentModel.fromMap(s);
+    await fetchExeats(student: student, context: context);
+    notifyListeners();
+  }
+
+  Future updateExeat(
+      {required BuildContext context,
+      required DateTime returnDate,
+      required ExeatModel exeat,
+      required StudentModel student}) async {
+    String query =
+        "update exeat set date_returned = '$returnDate' where id = ${exeat.id}";
+    await connection.transaction((ctx) async {
+      await ctx.query(query);
+    }).then((v) async {
+      query =
+          "update registration set status = 'in school' where std_id=${student.id}";
+      await connection.transaction((ctx) async {
+        await ctx.query(query);
+      });
+    });
+    Map<String, dynamic> s = _selectedStudent.toMap();
+    s['status'] = 'in school';
+    _selectedStudent = StudentModel.fromMap(s);
+    await fetchExeats(student: student, context: context);
+    notifyListeners();
+  }
+
+  Future fetchExeats(
+      {required StudentModel student, required BuildContext context}) async {
+    _studentExeats.clear();
+    List<Map<String, dynamic>> exeats =
+        await Provider.of<ExeatProvider>(context, listen: false)
+            .fetchExeats(student: student);
+    if (exeats.isNotEmpty) {
+      for (var exeat in exeats) {
+        _studentExeats.add(ExeatModel.fromMap(exeat));
+      }
+    }
+    notifyListeners();
+  }
 
   late StudentModel _selectedStudent;
   bool _isStudentSelected = false;

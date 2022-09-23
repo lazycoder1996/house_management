@@ -1,27 +1,35 @@
 import 'dart:convert';
 
 class ExeatModel {
+  final int id;
   final DateTime departure;
+  final String name;
   final String reason;
   final String destination;
   final DateTime expectedReturn;
-  final DateTime dateReturned;
+  final DateTime? dateReturned;
   ExeatModel({
+    required this.id,
+    required this.name,
     required this.departure,
     required this.reason,
     required this.destination,
     required this.expectedReturn,
-    required this.dateReturned,
+    this.dateReturned,
   });
 
   ExeatModel copyWith({
+    required int id,
+    required String name,
     required DateTime departure,
     required String reason,
     required String destination,
     required DateTime expectedReturn,
-    required DateTime dateReturned,
+    DateTime? dateReturned,
   }) {
     return ExeatModel(
+      id: id,
+      name: name,
       departure: departure,
       reason: reason,
       destination: destination,
@@ -32,6 +40,8 @@ class ExeatModel {
 
   ExeatModel merge(ExeatModel model) {
     return ExeatModel(
+      id: model.id,
+      name: model.name,
       departure: model.departure,
       reason: model.reason,
       destination: model.destination,
@@ -42,21 +52,25 @@ class ExeatModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'departure': departure.millisecondsSinceEpoch,
+      'id': id,
+      'name': name,
+      'departure': departure,
       'reason': reason,
       'destination': destination,
-      'expectedReturn': expectedReturn.millisecondsSinceEpoch,
-      'dateReturned': dateReturned.millisecondsSinceEpoch,
+      'expected_return': expectedReturn,
+      'date_returned': dateReturned,
     };
   }
 
   factory ExeatModel.fromMap(Map<String, dynamic> map) {
     return ExeatModel(
-      departure: map['depature'],
+      id: map['id'],
+      name: map['name'],
+      departure: map['date_issued'],
       reason: map['reason'],
       destination: map['destination'],
       expectedReturn: map['expected_return'],
-      dateReturned: map['dateReturned'],
+      dateReturned: map['date_returned'],
     );
   }
 

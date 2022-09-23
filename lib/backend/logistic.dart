@@ -26,15 +26,4 @@ class LogisticsProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-
-  addLogistics({StudentModel? student}) async {
-    // check if data already exists
-    String query = "select * from logistics where std_id = ${student!.id}";
-    List res = await connection.mappedReesultsQuery(query);
-    if (res.isEmpty) {
-      // insert new data
-    } else {
-      // update data
-    }
-  }
 }
