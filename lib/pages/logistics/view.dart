@@ -5,6 +5,8 @@ import 'package:house_management/utils/format_date.dart';
 import 'package:house_management/utils/to_title_case.dart';
 import 'package:provider/provider.dart';
 
+import '../registration/filter.dart';
+
 class LogisticsPage extends StatefulWidget {
   const LogisticsPage({Key? key}) : super(key: key);
 
@@ -32,39 +34,56 @@ class _LogisticsPageState extends State<LogisticsPage> {
           child: Text('Logistics'),
         ),
       ),
-      content: Consumer<LogisticsProvider>(builder: (context, lp, child) {
-        return SingleChildScrollView(
-          child: m.DataTable(
-            columns: ['Date', 'Name', 'House', 'Items']
-                .map(
-                  (e) => m.DataColumn(
-                    label: Text(e),
-                  ),
-                )
-                .toList(),
-            rows: lp.logistics
-                .map(
-                  (row) => m.DataRow(
-                    cells: [
-                      formatDate(row.date),
-                      toTitle(row.name),
-                      row.house,
-                      row.items!.join(", ")
-                    ]
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const FilterWidget(),
+          const SizedBox(
+            width: 10,
+          ),
+          Expanded(
+            child: Consumer<LogisticsProvider>(builder: (context, lp, child) {
+              return SingleChildScrollView(
+                controller: ScrollController(),
+                child: SingleChildScrollView(
+                  controller: ScrollController(),
+                  scrollDirection: Axis.horizontal,
+                  child: m.DataTable(
+                    columns: ['Date', 'Name', 'House', 'Items']
                         .map(
-                          (e) => m.DataCell(
-                            SingleChildScrollView(
-                              child: Text(e),
-                            ),
+                          (e) => m.DataColumn(
+                            label: Text(e),
+                          ),
+                        )
+                        .toList(),
+                    rows: lp.logistics
+                        .map(
+                          (row) => m.DataRow(
+                            cells: [
+                              formatDate(row.date),
+                              toTitle(row.name),
+                              row.house,
+                              row.items!.join(", ")
+                            ]
+                                .map(
+                                  (e) => m.DataCell(
+                                    SingleChildScrollView(
+                                      controller: ScrollController(),
+                                      child: Text(e),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         )
                         .toList(),
                   ),
-                )
-                .toList(),
+                ),
+              );
+            }),
           ),
-        );
-      }),
+        ],
+      ),
     );
   }
 }

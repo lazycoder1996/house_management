@@ -16,6 +16,7 @@ class ExeatProvider extends ChangeNotifier {
         "e.expected_return, e.date_returned from exeat e join registration r"
         " on e.std_id=r.std_id";
     if (student != null) query = "$query where e.std_id=${student.id}";
+    query = "$query  order by e.id";
     var res = await connection.mappedResultsQuery(query);
     List<Map<String, dynamic>> singleStudentExeat = [];
     for (final row in res) {

@@ -53,8 +53,8 @@ class ExeatModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
       'departure': departure,
+      'name': name,
       'reason': reason,
       'destination': destination,
       'expected_return': expectedReturn,

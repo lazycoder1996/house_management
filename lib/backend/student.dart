@@ -197,6 +197,7 @@ class StudentProvider extends ChangeNotifier {
       _students.add(StudentModel.fromMap(student));
     }
     notifyListeners();
+    if (query != null) return _students;
   }
 
   Future updateStudent({

@@ -103,7 +103,9 @@ class _ProfileRecordState extends State<ProfileRecord> {
                         residence: formatName(toTitle(_residence.text.trim())),
                         contact: _parentContact.text.trim(),
                         dob: dob,
-                        status: _status,
+                        status: _status.isNotEmpty
+                            ? _status
+                            : sp.selectedStudent.status,
                         id: widget.student.id,
                       );
                     }

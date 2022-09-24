@@ -1,6 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:house_management/pages/exeat/view.dart';
 import 'package:house_management/pages/logistics/view.dart';
 import 'package:house_management/pages/registration/view.dart';
+
+import '../roll_call/view.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -15,8 +18,8 @@ class _HomeState extends State<Home> {
     SizedBox(),
     RegistrationPage(),
     LogisticsPage(),
-    SizedBox(),
-    SizedBox(),
+    ExeatPage(),
+    RollCallPage(),
     SizedBox(),
   ];
 

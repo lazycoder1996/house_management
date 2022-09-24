@@ -53,12 +53,6 @@ class _FilterWidgetState extends State<FilterWidget> {
     });
   }
 
-  // void toggleShowFilter() {
-  //   setState(() {
-  //     showFilter = !showFilter;
-  //   });
-  // }
-
   toggles(String header, Map<String, dynamic> initValues) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +141,6 @@ class _FilterWidgetState extends State<FilterWidget> {
   void initState() {
     super.initState();
     addFromDB();
-    print(byProgramme);
   }
 
   @override
