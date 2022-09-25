@@ -4,8 +4,6 @@ import 'package:house_management/backend/exeat.dart';
 import 'package:house_management/utils/format_date.dart';
 import 'package:provider/provider.dart';
 
-import '../registration/filter.dart';
-
 class ExeatPage extends StatefulWidget {
   const ExeatPage({Key? key}) : super(key: key);
 
@@ -38,10 +36,10 @@ class _ExeatPageState extends State<ExeatPage> {
       content: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FilterWidget(),
-          const SizedBox(
-            width: 10,
-          ),
+          // const FilterWidget(),
+          // const SizedBox(
+          //   width: 10,
+          // ),
           Expanded(
             child: Consumer<ExeatProvider>(
               builder: (context, ep, child) {

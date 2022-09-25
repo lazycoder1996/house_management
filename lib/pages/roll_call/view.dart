@@ -1,8 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as m;
 import 'package:house_management/backend/fetch.dart';
+import 'package:house_management/backend/roll_call.dart';
 import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/house.dart';
-import 'package:house_management/pages/registration/filter.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/student.dart';
@@ -15,6 +16,48 @@ class RollCallPage extends StatefulWidget {
 }
 
 class _RollCallPageState extends State<RollCallPage> {
+  Map<String, dynamic> filterFields = {};
+  String baseQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+    fetchRollCalls();
+  }
+
+  init() async {
+    filterFields = {
+      'date': {
+        'fields': {},
+        'query': [],
+      },
+      // 'house': {
+      //   'fields': {},
+      //   'query': [],
+      // },
+    };
+    // for (HouseModel house
+    //     in Provider.of<Backend>(context, listen: false).houses) {
+    //   filterFields['house']['fields'][house.name] = false;
+    // }
+    await Provider.of<RollCallProvider>(context, listen: false)
+        .fetchUniqueDates()
+        .then((value) {
+      setState(() {
+        for (String date in value) {
+          filterFields['date']['fields'][date] = false;
+        }
+      });
+    });
+  }
+
+  fetchRollCalls() async {
+    await Provider.of<RollCallProvider>(context, listen: false).fetchRolls(
+      query: baseQuery,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
@@ -26,7 +69,62 @@ class _RollCallPageState extends State<RollCallPage> {
       content: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FilterWidget(),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // const FilterWidget(),
+                  SizedBox(
+                    width: 200,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Filter',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            // color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  ...filterFields['date']['fields'].keys.map(
+                        (e) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: RadioButton(
+                            content: Text(e),
+                            checked: filterFields['date']['fields'][e],
+                            onChanged: (v) {
+                              setState(() {
+                                filterFields['date']['fields']
+                                    .updateAll((key, value) => false);
+                                filterFields['date']['fields'][e] = v;
+                              });
+                              Provider.of<RollCallProvider>(context,
+                                      listen: false)
+                                  .fetchRolls(
+                                query:
+                                    "select rc.house, r.date, count(case when r.status = true then r.id end) as present, "
+                                    "count(case when r.status = false then r.id end) as absent "
+                                    "from roll_call as r join registration rc on r.std_id=rc.std_id "
+                                    "where date = '$e' group by house, r.date",
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(
             width: 10,
           ),
@@ -56,6 +154,39 @@ class _RollCallPageState extends State<RollCallPage> {
                     ),
                   ),
                 ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Consumer<RollCallProvider>(
+                      builder: (context, rp, child) {
+                        return m.DataTable(
+                            columns: ['House', 'No. Present', 'No. absent']
+                                .map(
+                                  (e) => m.DataColumn(
+                                    label: Text(e),
+                                  ),
+                                )
+                                .toList(),
+                            rows: rp.rollCalls
+                                .map(
+                                  (e) => m.DataRow(
+                                    cells: [
+                                      m.DataCell(
+                                        Text(e.house),
+                                      ),
+                                      m.DataCell(
+                                        Text(e.present.toString()),
+                                      ),
+                                      m.DataCell(
+                                        Text(e.absent.toString()),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                                .toList());
+                      },
+                    ),
+                  ),
+                )
               ],
             ),
           )
@@ -84,6 +215,7 @@ class _ConductRollCallState extends State<ConductRollCall> {
 
   init() {
     houses = Provider.of<Backend>(context, listen: false).houses;
+    houses.removeWhere((element) => element.name == 'Day');
     for (HouseModel house in houses) {
       selectedHouses[house] = false;
     }
@@ -108,18 +240,21 @@ class _ConductRollCallState extends State<ConductRollCall> {
             child: Text('Proceed'),
           ),
           onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return AllList(
-                    houses: selectedHouses.keys
-                        .map((e) {
-                          return e;
-                        })
-                        .where((element) => selectedHouses[element]!)
-                        .toList(),
-                  );
-                });
+            if (selectedHouses.values.every((element) => !element)) {
+            } else {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AllList(
+                      houses: selectedHouses.keys
+                          .map((e) {
+                            return e;
+                          })
+                          .where((element) => selectedHouses[element]!)
+                          .toList(),
+                    );
+                  });
+            }
           },
         ),
       ],
@@ -189,67 +324,105 @@ class AllList extends StatefulWidget {
 }
 
 class _AllListState extends State<AllList> {
-  late String selected;
+  late HouseModel selected;
+
+  Map<String, List<StudentModel>> students = {};
+  Map<StudentModel, bool> roll = {};
 
   @override
   void initState() {
     super.initState();
-    selected = widget.houses.first.name;
+    selected = widget.houses.first;
     init();
   }
 
   init() async {
-    Map<String, List<StudentModel>> students = {};
     for (HouseModel house in widget.houses) {
-      print('searching for ${house.name}');
-
       await Provider.of<StudentProvider>(context, listen: false)
           .fetchStudents(
         query:
             "select * from registration r join house h on lower(r.house)=lower(h.name) where h.name = '${house.name}'",
       )
           .then((value) {
-        students[house.name] = value;
-        print('${house.name} => ${students[house.name]}');
+        setState(() {
+          students[house.name] = value;
+        });
       });
     }
-    print('students => ${students}');
+    for (List<StudentModel> houseStudent in students.values) {
+      for (StudentModel student in houseStudent) {
+        roll[student] = false;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      onKeyEvent: (v) {
-        print(v.physicalKey.usbHidUsage);
-        if (v.physicalKey.usbHidUsage == 01) {
-          print('eeeii');
-        }
-      },
-      focusNode: FocusNode(),
-      child: ContentDialog(
-        title: DropDownButton(
-          title: Text(selected),
-          items: widget.houses
-              .map(
-                (e) => MenuFlyoutItem(
-                  text: Text(e.name),
-                  onPressed: () {},
-                ),
-              )
-              .toList(),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            // children:
-            // [selected]!.map((e) {
-            //   return Checkbox(
-            //     content: Text(e.name),
-            //     onChanged: (val) {},
-            //     checked: false,
-            //   );
-            // }).toList(),
+    return ContentDialog(
+      actions: [
+        Button(
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text('Close'),
           ),
+          onPressed: () async {
+            for (StudentModel student in roll.keys) {
+              await Provider.of<StudentProvider>(context, listen: false)
+                  .addRollCall(
+                student: student,
+                context: context,
+                value: roll[student],
+              )
+                  .then((value) {
+                Navigator.of(context).pop();
+              });
+            }
+          },
+        )
+      ],
+      // constraints: const BoxConstraints.expand(width: 500),
+      title: DropDownButton(
+        title: Text(selected.name),
+        items: widget.houses
+            .map(
+              (house) => MenuFlyoutItem(
+                text: Text(house.name),
+                onPressed: () {
+                  setState(() {
+                    selected = house;
+                  });
+                },
+              ),
+            )
+            .toList(),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: students.isEmpty
+              ? []
+              : students[selected.name]!.map((student) {
+                  return Checkbox(
+                    content: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Text(student.id.toString()),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text(student.name),
+                        ],
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        roll[student] = val!;
+                      });
+                    },
+                    checked: roll[student] ?? false,
+                  );
+                }).toList(),
         ),
       ),
     );

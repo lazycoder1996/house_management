@@ -37,10 +37,10 @@ class _LogisticsPageState extends State<LogisticsPage> {
       content: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FilterWidget(),
-          const SizedBox(
-            width: 10,
-          ),
+          // const FilterWidget(),
+          // const SizedBox(
+          //   width: 10,
+          // ),
           Expanded(
             child: Consumer<LogisticsProvider>(builder: (context, lp, child) {
               return SingleChildScrollView(

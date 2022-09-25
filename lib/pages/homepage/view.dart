@@ -1,7 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/pages/exeat/view.dart';
 import 'package:house_management/pages/logistics/view.dart';
 import 'package:house_management/pages/registration/view.dart';
+import 'package:provider/provider.dart';
 
 import '../roll_call/view.dart';
 
@@ -33,7 +35,10 @@ class _HomeState extends State<Home> {
           }),
       pane: NavigationPane(
         selected: selectedIndex,
-        onChanged: (i) => setState(() => selectedIndex = i),
+        onChanged: (i) {
+          Provider.of<StudentProvider>(context, listen: false).clearStudent();
+          setState(() => selectedIndex = i);
+        },
         displayMode: PaneDisplayMode.auto,
         items: [
           PaneItem(

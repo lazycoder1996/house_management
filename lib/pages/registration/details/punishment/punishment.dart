@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as m;
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/student.dart';
+import 'package:provider/provider.dart';
 
 class PunishmentRecord extends StatefulWidget {
   final StudentModel student;
@@ -21,7 +23,10 @@ class _PunishmentRecordState extends State<PunishmentRecord> {
     loadData();
   }
 
-  loadData() async {}
+  loadData() async {
+    await Provider.of<StudentProvider>(context, listen: false)
+        .fetchPunishment(student: widget.student);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,19 +74,31 @@ class PunishmentTable extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    return m.DataTable(
-      border: m.TableBorder.all(
-        color: m.Colors.grey,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      columns: [
-        'Date issued',
-        'Cause',
-        'Punishment',
-        'Days of working',
-        'Status'
-      ].map((e) => m.DataColumn(label: Text(e))).toList(),
-      rows: const [],
-    );
+    return Consumer<StudentProvider>(builder: (context, sp, child) {
+      return sp.studentPunishments.isEmpty
+          ? const Center(
+              child: Text(
+                'No records found',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                ),
+              ),
+            )
+          : m.DataTable(
+              border: m.TableBorder.all(
+                color: m.Colors.grey,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              columns: [
+                'Date issued',
+                'Cause',
+                'Punishment',
+                'Days of working',
+                'Status'
+              ].map((e) => m.DataColumn(label: Text(e))).toList(),
+              rows: const [],
+            );
+    });
   }
 }

@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/backend/exeat.dart';
 import 'package:house_management/backend/logistic.dart';
 import 'package:house_management/backend/punishment.dart';
+import 'package:house_management/backend/roll_call.dart';
 import 'package:house_management/backend/student.dart';
 import 'package:house_management/constants/prefs.dart';
 import 'package:house_management/pages/auth/login_page.dart';
@@ -65,6 +66,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (context) => ExeatProvider()),
         ChangeNotifierProvider(create: (context) => LogisticsProvider()),
         ChangeNotifierProvider(create: (context) => PunishmentProvider()),
+        ChangeNotifierProvider(create: (context) => RollCallProvider()),
       ],
       child: const HomePage(),
     );

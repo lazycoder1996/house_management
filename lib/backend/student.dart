@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:house_management/backend/exeat.dart';
 import 'package:house_management/backend/logistic.dart';
+import 'package:house_management/backend/roll_call.dart';
 import 'package:house_management/model/exeat.dart';
 import 'package:house_management/model/student.dart';
 import 'package:house_management/utils/to_title_case.dart';
@@ -9,8 +10,33 @@ import 'package:provider/provider.dart';
 import '../main.dart';
 import '../model/logistics.dart';
 import '../model/punishment.dart';
+import '../model/roll_call.dart';
 
 class StudentProvider extends ChangeNotifier {
+  final List<RollCallModel> _rollCalls = [];
+
+  List<RollCallModel> get rollCalls => _rollCalls;
+
+  Future addRollCall(
+      {required StudentModel student,
+      required BuildContext context,
+      bool? value}) async {
+    await Provider.of<RollCallProvider>(context, listen: false)
+        .addRoll(stdId: student.id, value: value);
+    fetchRollCalls(id: student.id);
+  }
+
+  Future fetchRollCalls({required int id}) async {
+    _rollCalls.clear();
+    String query = "select * from roll_call where std_id=$id";
+    var res = await connection.mappedResultsQuery(query);
+    for (final row in res) {
+      Map<String, dynamic> rollCall = row["roll_call"];
+      _rollCalls.add(RollCallModel.fromMap(rollCall));
+    }
+    notifyListeners();
+  }
+
   final List<StudentModel> _students = [];
 
   List<StudentModel> get students => _students;
@@ -186,18 +212,26 @@ class StudentProvider extends ChangeNotifier {
     String? query,
   }) async {
     _students.clear();
-    var res = await connection.mappedResultsQuery(
+    List<Map<String, Map<String, dynamic>>> res =
+        await connection.mappedResultsQuery(
       query ??
           "select * from registration r join house h on lower(r.house)=lower(h.name) ${id != null ? "where std_id = $id" : ""}",
     );
     for (final row in res) {
-      Map<String, dynamic> student = row["registration"];
-      student['house'] = row['house'];
+      Map<String, dynamic>? student = row["registration"];
+      student!['house'] = row['house'];
       student['name'] = toTitle(student['name']);
       _students.add(StudentModel.fromMap(student));
     }
     notifyListeners();
-    if (query != null) return _students;
+    if (query != null) {
+      return List.generate(res.length, (index) {
+        Map<String, dynamic>? std = res[index]['registration'];
+        std!['house'] = res[index]['house'];
+        std['name'] = toTitle(std['name']);
+        return StudentModel.fromMap(std);
+      });
+    }
   }
 
   Future updateStudent({

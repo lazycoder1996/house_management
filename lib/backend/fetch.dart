@@ -1,7 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:house_management/model/exeat.dart';
 import 'package:house_management/model/item.dart';
-import 'package:house_management/model/logistics.dart';
 import 'package:house_management/model/programme.dart';
 import 'package:house_management/model/status.dart';
 
@@ -19,27 +17,6 @@ class Backend extends ChangeNotifier {
   final List<StatusModel> _status = [];
 
   List<StatusModel> get status => _status;
-
-  late final List<LogisticsModel> _studentLogistics = [];
-
-  List<LogisticsModel> get studentLogistics => _studentLogistics;
-
-  late final List<ExeatModel> _studentExeat = [];
-
-  List<ExeatModel> get studentExeat => _studentExeat;
-
-  // fetchStudentExeat({StudentModel? student}) async {
-  //   _studentExeat.clear();
-  //   String query = "select * from exeat e join registration r "
-  //       "on e.std_id=r.std_id where e.std_id=${student!.id}";
-  //   var res = await connection.mappedResultsQuery(query);
-  //   for (final row in res) {
-  //     Map<String, dynamic> exeat = row["exeat"];
-  //     exeat["name"] = row["registration"]["name"];
-  //     _studentExeat.add(ExeatModel.fromMap(exeat));
-  //   }
-  //   notifyListeners();
-  // }
 
   fetchStudentPunishment({int? id}) async {}
 

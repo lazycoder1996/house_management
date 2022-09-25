@@ -1,6 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as m;
+import 'package:house_management/backend/student.dart';
 import 'package:house_management/model/student.dart';
+import 'package:house_management/utils/format_date.dart';
+import 'package:provider/provider.dart';
 
 class RollCallRecord extends StatefulWidget {
   final StudentModel student;
@@ -21,7 +24,10 @@ class _RollCallRecordState extends State<RollCallRecord> {
     loadData();
   }
 
-  loadData() async {}
+  loadData() async {
+    await Provider.of<StudentProvider>(context, listen: false)
+        .fetchRollCalls(id: widget.student.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +56,42 @@ class RollCallTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return m.DataTable(
-      border: m.TableBorder.all(
-        color: m.Colors.grey,
-      ),
-      columns:
-          ['Date', 'Status'].map((e) => m.DataColumn(label: Text(e))).toList(),
-      rows: [],
-    );
+    return Consumer<StudentProvider>(builder: (context, sp, child) {
+      return sp.rollCalls.isEmpty
+          ? const Center(
+              child: Text(
+                'No roll calls conducted',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                ),
+              ),
+            )
+          : m.DataTable(
+              border: m.TableBorder.all(
+                color: m.Colors.grey,
+              ),
+              columnSpacing: 76,
+              columns: ['Date', 'Status']
+                  .map((e) => m.DataColumn(label: Text(e)))
+                  .toList(),
+              rows: sp.rollCalls
+                  .map((e) => m.DataRow(
+                        cells: [
+                          m.DataCell(Text(formatDate(e.date))),
+                          m.DataCell(e.status
+                              ? Icon(
+                                  FluentIcons.check_mark,
+                                  color: Colors.green,
+                                )
+                              : Icon(
+                                  FluentIcons.cancel,
+                                  color: Colors.red,
+                                )),
+                        ],
+                      ))
+                  .toList(),
+            );
+    });
   }
 }
